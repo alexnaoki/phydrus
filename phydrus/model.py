@@ -1008,6 +1008,264 @@ class Model:
         if self.basic_info["AtmInf"]:
             self.write_atmosphere()
 
+    def write_input_withCO2(self):
+        '''
+        Method to write the input files for the HYDRUS-1D simulation with CO2 transport
+        '''
+        self.write_selector()
+
+    def write_selector2(self, fname="SELECTOR2.IN"):
+        """
+        Write the SELECTOR.IN file.
+
+        Parameters
+        ----------
+        fname: str, optional
+            String with the filename. Written to the workspace folder ('ws').
+
+        """
+        self._set_bc_settings()
+
+        # Create Header string
+        string = "*** BLOCK {:{}{}{}}\n"
+
+        # Write block A: BASIC INFORMATION
+        lines = [
+            f"Pcp_File_Version={self.basic_info['iVer']}\n"
+            f"{string.format('A: BASIC INFORMATION ', '*', '<', 72)}"
+            f"{self.basic_info['Hed']}\n{self.description}\n"
+            f"LUnit TUnit MUnit\n{self.basic_info['LUnit']}\n"
+            f"{self.basic_info['TUnit']}\n{self.basic_info['MUnit']}\n"
+        ]
+
+        vars_list = [["lWat", "lChem", "lTemp", "lSink", "lRoot", "lShort",
+                      "lWDep", "lScreen", "AtmInf", "lEquil", "lInverse",
+                      "\n"],
+                     ["lSnow", "lHP1", "lMeteo", "lVapor", "lActRSU", "lFlux",
+                      "lIrrig", "\n"]]
+
+        for variables in vars_list:
+            lines.append("  ".join(variables))
+            lines.append("  ".join("t" if self.basic_info[var] else "f" for
+                                   var in variables[:-1]))
+            lines.append("\n")
+
+        lines.append(f"NMat NLay CosAlfa \n{self.n_materials}"
+                     f" {self.n_layers} {self.basic_info['CosAlfa']}\n")
+
+        # Write block B: WATER FLOW INFORMATION
+        lines.append(string.format("B: WATER FLOW INFORMATION ", "*", "<", 72))
+        lines.append("MaxIt  TolTh  TolH   (maximum number of iterations and "
+                     "tolerances)\n")
+        variables = ["MaxIt", "TolTh", "TolH"]
+        lines.append(
+            "   ".join([str(self.water_flow[var]) for var in variables]))
+        lines.append("\n")
+
+        vars_list = [["TopInf", "WLayer", "KodTop", "lInitW", "\n"],
+                     ["BotInf", "qGWLF", "FreeD", "SeepF", "KodBot", "qDrain",
+                      "hSeep", "\n"]]
+
+        upper_condition = (self.water_flow["KodTop"] < 0
+                           and not self.water_flow["TopInf"])
+
+        lower_condition = ((self.water_flow["KodBot"] < 0)
+                           and not self.water_flow["BotInf"]
+                           and not self.water_flow["qGWLF"]
+                           and not self.water_flow["FreeD"]
+                           and not self.water_flow["SeepF"])
+
+        if upper_condition or lower_condition:
+            vars_list.append(["rTop", "rBot", "rRoot", "\n"])
+
+        if self.water_flow["qGWLF"]:
+            vars_list.append(["GWL0L", "Aqh", "Bqh", "\n"])
+
+        vars_list.append(["ha", "hb", "\n"])
+        vars_list.append(["iModel", "iHyst", "\n"])
+
+        if self.water_flow["iHyst"] > 0:
+            vars_list.append(["iKappa", "\n"])
+
+        for variables in vars_list:
+            lines.append("  ".join(variables))
+            values = []
+            for var in variables[:-1]:
+                val = self.water_flow[var]
+                if val is True:
+                    values.append("t")
+                elif val is False:
+                    values.append("f")
+                else:
+                    values.append(f"{val}")
+            values.append("\n")
+            lines.append(" ".join(values))
+
+        if self.drains:
+            self.logger.error("Drains are currently not Implemented.")
+            raise
+
+        # Write the material parameters
+        lines.append(self.materials["water"].to_string(index=False))
+        lines.append("\n")
+
+        # Write BLOCK C: TIME INFORMATION
+        lines.append(string.format("C: TIME INFORMATION ", "*", "<", 72))
+        vars_list = [
+            ["dt", "dtMin", "dtMax", "dMul", "dMul2", "ItMin", "ItMax",
+             "MPL", "\n"], ["tInit", "tMax", "\n"],
+            ["lPrint", "nPrintSteps", "tPrintInterval", "lEnter", "\n"]]
+        for variables in vars_list:
+            lines.append(" ".join(variables))
+            values = []
+            for var in variables[:-1]:
+                val = self.time_info[var]
+                if val is True:
+                    values.append("t")
+                elif val is False:
+                    values.append("f")
+                else:
+                    values.append(str(val))
+            values.append("\n")
+            lines.append(" ".join(values))
+
+        lines.append("TPrint(1),TPrint(2),...,TPrint(MPL)\n")
+        for i in range(int(len(self.times) / 6) + 1):
+            lines.append(
+                " ".join([str(time) for time in self.times[i * 6:i * 6 + 6]]))
+            lines.append("\n")
+
+        # Write BLOCK D: Root Growth Information
+        if self.basic_info["lRoot"]:
+            lines.append(
+                string.format("D: ROOT GROWTH INFORMATION ", "*", "<", 72))
+            lines.append(f"iRootDepthEntry\n{self.root_growth['iRootIn']}\n")
+            d = self.root_growth.copy()
+            d.pop("iRootIn")
+            d["\n"] = "\n"
+            lines.append("    ".join(d.keys()))
+            lines.append("    ".join(f"{p}" for p in d.values()))
+
+        # Write Block E - Heat transport information
+        if self.basic_info["lTemp"]:
+            lines.append(string.format("E: HEAT TRANSPORT INFORMATION ",
+                                       "*", "<", 72))
+            lines.append(self.heat_parameters.to_string(index=False))
+            lines.append(
+                "\n tAmpl tPeriod Campbell SnowMF lDummy lDummy lDummy "
+                "lDummy lDummy\n"
+                "{} {} {} {} f f f f f\n"
+                "kTopT TTop kBotT TBot\n"
+                "{} {} {} {}\n".format(self.heat_transport["Ampl"],
+                                       self.heat_transport["tPeriod"],
+                                       self.heat_transport["iCampbell"],
+                                       self.heat_transport["SnowMF"],
+                                       self.heat_transport["kTopT"],
+                                       self.heat_transport["tTop"],
+                                       self.heat_transport["kBotT"],
+                                       self.heat_transport["tBot"]))
+
+        # Write Block F - Solute transport information
+        if self.basic_info["lChem"]:
+            lines.append(string.format("F: SOLUTE TRANSPORT INFORMATION ",
+                                       "*", "<", 72))
+            lines.append(" Epsi lUpW lArtD lTDep cTolA cTolR MaxItC PeCr "
+                         "No.Solutes lTort iBacter lFiltr nChPar\n"
+                         "{} {} {} {} {} {} {} {} {} {} {} {} {}\n"
+                         "iNonEqul lWatDep lDualNEq lInitM lInitEq lTort "
+                         "lDummy lDummy lDummy lDummy lCFTr\n"
+                         "{} {} {} {} {} {} f f f f f\n".format(
+                self.solute_transport["Epsi"],
+                "t" if self.solute_transport["lUpW"] else "f",
+                "t" if self.solute_transport["lArtD"] else "f",
+                "t" if self.solute_transport["ltDep"] else "f",
+                self.solute_transport["cTolA"],
+                self.solute_transport["cTolR"],
+                self.solute_transport["MaxItC"],
+                self.solute_transport["PeCr"],
+                self.n_solutes,
+                "t" if self.solute_transport["lTort"] else "f",
+                self.solute_transport["iBacter"],
+                "t" if self.solute_transport["lFiltr"] else "f",
+                self.get_empty_solute_df().columns.size + 2,
+                self.solute_transport["iNonEqual"],
+                "t" if self.solute_transport["lWatDep"] else "f",
+                "t" if self.solute_transport["lDualEq"] else "f",
+                "f", "f",
+                "t" if self.solute_transport["lTort"] else "f"
+            ))
+
+            # Write the material parameters
+            lines.append(self.materials["solute"].to_string(index=False))
+            lines.append("\n")
+
+            for sol in self.solutes:
+                lines.append(f"DifW DifG\n{sol['difw']} {sol['difg']}\n"
+                             f"{sol['data'].to_string(index=False)}\n")
+
+            lines.append("kTopSolute SolTop kBotSolute SolBot\n"
+                         "{} {} {} {}\n".format(
+                self.solute_transport["kTopCh"],
+                " ".join([f"{s['top_conc']}" for s in self.solutes]),
+                self.solute_transport["kBotCh"],
+                " ".join([f"{s['bot_conc']}" for s in self.solutes])))
+            if self.solute_transport["kTopCh"] == -2:
+                lines.append("dSurf cAtm\n""{} {}\n".format(
+                    self.solute_transport["dSurf"],
+                    self.solute_transport["cAtm"]))
+
+            lines.append("tPulse\n{}\n".format(
+                self.solute_transport["tPulse"]))
+
+        # Write Block G - Root water uptake information
+        if self.basic_info["lSink"]:
+            lines.append(string.format("G: ROOT WATER UPTAKE INFORMATION ",
+                                       "*", "<", 72))
+            vars_list = [["iMoSink", "cRootMax", "OmegaC", "\n"]]
+
+            if self.root_uptake["iMoSink"] == 0:
+                vars_list.append(
+                    ["P0", "P2H", "P2L", "P3", "r2H", "r2L", "\n"])
+            elif self.root_uptake["iMoSink"] == 1:
+                vars_list.append(["P50", "P3", "\n"])
+
+            for variables in vars_list:
+                lines.append(" ".join(variables))
+                lines.append("    ".join(f"{self.root_uptake[var]}" for var in
+                                         variables[:-1]))
+                lines.append("\n")
+
+            lines.append("POptm(1),POptm(2),...,POptm(NMat)\n")
+            lines.append("    ".join(f"{p}" for p in self.root_uptake[
+                "POptm"]))
+            lines.append("\n")
+
+            if self.basic_info["lChem"]:
+                lines.append("Solute Reduction\nf\n")
+
+        # Write Block J - Inverse solution information
+        if self.basic_info["lInverse"]:
+            raise NotImplementedError("The inverse modeling module from "
+                                      "Hydrus-1D will not be supported. "
+                                      "Python packages are used for this.")
+
+        # Write Block K – Carbon dioxide transport information
+
+        # Write Block M – Meteorological information
+        if self.basic_info["lMeteo"]:
+            raise NotImplementedError
+
+        # Write END statement
+        lines.append(string.format("END OF INPUT FILE SELECTOR.IN ",
+                                   "*", "<", 72))
+
+        # Write the actual file
+        fname = os.path.join(self.ws_name, fname)
+        with open(fname, "w") as file:
+            file.writelines(lines)
+
+        self.logger.info("Successfully wrote %s", fname)
+
     def write_selector(self, fname="SELECTOR.IN"):
         """
         Write the SELECTOR.IN file.
