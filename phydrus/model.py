@@ -987,6 +987,22 @@ class Model:
                 self.times = [self.time_info["tMax"]]
         return self.times
 
+    def add_co2_transport(self, lstagn=0, CO2Top, kBotCO,Co2Bot):
+        '''
+        kBotCO: 1 = Dirichlet boundary condition,
+                -1 = Cauchy boundary condition.
+                0 = Free drainage
+        '''
+
+        self.co2_transport = {
+            "lStagn": lstagn,
+            "kTopCO": -1 if lstagn else 1,
+            "CO2Top": CO2Top,
+            "kBotCO": kBotCO,
+            "CO2Bot": 0 if kBotCO == 0 else Co2Bot,
+            
+        }
+
     def simulate(self):
         """Method to call the Hydrus-1D executable."""
         # Remove old Error.msg file
