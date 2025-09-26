@@ -3,8 +3,9 @@
 """
 
 import os
-from subprocess import run
+from subprocess import run, PIPE, STDOUT
 from logging import getLogger
+import pathlib
 
 from numpy import arange, linspace
 from pandas import DataFrame, DatetimeIndex, MultiIndex
@@ -158,14 +159,21 @@ class Model:
         This method may also be used to re-set the path to the executable.
 
         """
-        # Store the hydrus executable and the project workspace
-        if not os.path.exists(exe_name):
-            self.logger.error("Path to the Hydrus-1D executable seems "
-                              "incorrect, please check the path to the "
-                              "executable.")
-            raise FileNotFoundError
-        else:
+        print(exe_name, 'test')
+        if exe_name.startswith("wine"):
             self.exe_name = exe_name
+            print('here set_exe')
+            print(self.exe_name)
+            # print('Using wine to run Hydrus-1D')
+        else:
+            # Store the hydrus executable and the project workspace
+            if not os.path.exists(exe_name):
+                self.logger.error("Path to the Hydrus-1D executable seems "
+                                "incorrect, please check the path to the "
+                                "executable.")
+                raise FileNotFoundError
+            else:
+                self.exe_name = exe_name
 
     def add_profile(self, profile):
         """
@@ -987,9 +995,15 @@ class Model:
             os.remove(os.path.join(self.ws_name, "Error.msg"))
 
         # Run Hydrus executable.
-        cmd = [self.exe_name, self.ws_name, "-1"]
-        result = run(cmd)
-
+        if self.exe_name.startswith("wine"):
+            print('Simulate with Wine')
+            self.exe_name = self.exe_name.replace("wine ", "")
+            cmd = ["wine", self.exe_name, self.ws_name, "-1"]
+        else:
+            cmd = [self.exe_name, self.ws_name, "-1"]
+        # result = run(cmd, input="\n", text=True, stdout=PIPE, stderr=STDOUT)
+        result = run(cmd, input="\n", text=True)
+        print(result.returncode)
         # Provide the user with some feedback about the simulation
         if result.returncode == 0:
             self.logger.info("Hydrus-1D Simulation Successful.")
