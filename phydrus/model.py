@@ -55,7 +55,7 @@ class Model:
 
     def __init__(self, exe_name, ws_name, name="model", description=None,
                  length_unit="cm", time_unit="days", mass_units="mmol",
-                 print_screen=False):
+                 print_screen=False, hydrus1d_version=None):
 
         # Set logger to log all events
         self.logger = getLogger(__name__)
@@ -66,6 +66,8 @@ class Model:
             self.logger.info("Directory %s created", ws_name)
 
         self.ws_name = ws_name
+
+        self.hydrus1d_version = hydrus1d_version
 
         self.name = name
         self.description = description
