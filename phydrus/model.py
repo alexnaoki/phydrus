@@ -108,6 +108,7 @@ class Model:
             "lShort": True,
             "lWDep": False,
             "lScreen": print_screen,
+            "lCO2": False,
             "AtmInf": False,
             "lEquil": True,
             "lInverse": False,
@@ -988,34 +989,40 @@ class Model:
                 self.times = [self.time_info["tMax"]]
         return self.times
 
-    def add_co2_transport(self, lstagn=0, CO2Top, kBotCO,Co2Bot, GamR0, GamS0, PDDMax, kProd,Alpha, R,B2, B1,cM2, cM1, HB1, HB2, P0c, P50c):
+    def add_co2_transport(self, parameters,lstagn=0, CO2Top, kBotCO,Co2Bot, GamR0, GamS0, PDDMax, kProd,Alpha, R,B2, B1,cM2, cM1, HB1, HB2, P0c, P50c):
         '''
         kBotCO: 1 = Dirichlet boundary condition,
                 -1 = Cauchy boundary condition.
                 0 = Free drainage
         '''
-
-        self.co2_transport = {
-            "lStagn": lstagn,
-            "kTopCO": -1 if lstagn else 1,
-            "CO2Top": CO2Top,
-            "kBotCO": kBotCO,
-            "CO2Bot": 0 if kBotCO == 0 else Co2Bot,
-            "GamR0": GamR0,
-            "GamS0": GamS0,
-            "PDDMax": PDDMax,
-            "kProd": kProd,
-            "Alpha": Alpha if kProd==0 else 0,
-            "R": R if kProd==1 else 0,
-            "B2": B2,
-            "B1": B1,
-            "cM2": cM2,
-            "cM1": cM1,
-            "HB1": HB1,
-            "HB2": HB2,
-            "P0c": P0c,
-            "P50c": P50c
-        }
+        if self.co2_transport is None:
+            self.co2_parameters = parameters
+            self.co2_transport = {
+                "lStagn": lstagn,
+                "kTopCO": -1 if lstagn else 1,
+                "CO2Top": CO2Top,
+                "kBotCO": kBotCO,
+                "CO2Bot": 0 if kBotCO == 0 else Co2Bot,
+                "GamR0": GamR0,
+                "GamS0": GamS0,
+                "PDDMax": PDDMax,
+                "kProd": kProd,
+                "Alpha": Alpha if kProd==0 else 0,
+                "R": R if kProd==1 else 0,
+                "B2": B2,
+                "B1": B1,
+                "cM2": cM2,
+                "cM1": cM1,
+                "HB1": HB1,
+                "HB2": HB2,
+                "P0c": P0c,
+                "P50c": P50c
+            }
+            self.basic_info["lCO2"] = True
+        else:
+            raise Warning("CO2 transport model already exists. Please "
+                          "delete the old CO2 transport model first using "
+                          "ml.del_co2_transport().")
 
     def simulate(self):
         """Method to call the Hydrus-1D executable."""
@@ -1290,7 +1297,47 @@ class Model:
                                       "Python packages are used for this.")
 
         # Write Block K – Carbon dioxide transport information
+        if self.basic_info["lCO2"]:
+            lines.append(string.format("*** K: CARBON DIOXIDE TRANSPORT "
+                                       "INFORMATION ", "*", "<", 72))
+            lines.append("\n lStagn\n".format(self.co2_transport["lStagn"]))
+            vars_list = [["kTopCO", "CO2Top", "kBotCO", "CO2Bot", "\n"],
+                            ["GamR0", "GamS0", "PDDMax", "kProd", "\n"],
+                            ["B2", "B1", "cM2", "cM1", "HB1", "HB2", "P0c", "P50c","\n"]]
+            for n, variables in enumerate(vars_list):
+                if n == 0:
+                    lines.append(" ".join(variables))
+                    lines.append("    ".join(f"{self.co2_transport[var]}" for var in
+                                             variables[:-1]))
+                    lines.append("\n")
+                    lines.append(self.co2_parameters.to_string(index=False))
+                if n == 1:
+                    if self.co2_transport["kProd"] == 0:
+                        use_alpha = True
+                    else:
+                        use_alpha = False
+                    lines.append(" ".join(variables))
+                    lines.append("    ".join(f"{self.co2_transport[var]}" for var in
+                                             variables[:-1]))
+                    lines.append("\n")
+                    if use_alpha:
+                        lines.append("Alpha\n")
+                        lines.append(f"{self.co2_transport['Alpha']}\n")
+                    else:
+                        lines.append("R\n")
+                        lines.append(f"{self.co2_transport['R']}\n")
+                if n ==2:
+                    lines.append(" ".join(variables))
+                    lines.append("    ".join(f"{self.co2_transport[var]}" for var in
+                                             variables[:-1]))
+                    lines.append("\n")
 
+
+
+            # lines.append(self.co2_parameters.to_string(index=False))
+            
+            
+            
         # Write Block M – Meteorological information
         if self.basic_info["lMeteo"]:
             raise NotImplementedError
