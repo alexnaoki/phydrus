@@ -92,6 +92,7 @@ class Model:
         self.heat_parameters = None
         self.root_uptake = None
         self.root_growth = None
+        self.co2_transport = None
 
         self.basic_info = {
             "iVer": "4",
@@ -987,7 +988,7 @@ class Model:
                 self.times = [self.time_info["tMax"]]
         return self.times
 
-    def add_co2_transport(self, lstagn=0, CO2Top, kBotCO,Co2Bot):
+    def add_co2_transport(self, lstagn=0, CO2Top, kBotCO,Co2Bot, GamR0, GamS0, PDDMax, kProd,Alpha, R,B2, B1,cM2, cM1, HB1, HB2, P0c, P50c):
         '''
         kBotCO: 1 = Dirichlet boundary condition,
                 -1 = Cauchy boundary condition.
@@ -1000,7 +1001,20 @@ class Model:
             "CO2Top": CO2Top,
             "kBotCO": kBotCO,
             "CO2Bot": 0 if kBotCO == 0 else Co2Bot,
-            
+            "GamR0": GamR0,
+            "GamS0": GamS0,
+            "PDDMax": PDDMax,
+            "kProd": kProd,
+            "Alpha": Alpha if kProd==0 else 0,
+            "R": R if kProd==1 else 0,
+            "B2": B2,
+            "B1": B1,
+            "cM2": cM2,
+            "cM1": cM1,
+            "HB1": HB1,
+            "HB2": HB2,
+            "P0c": P0c,
+            "P50c": P50c
         }
 
     def simulate(self):
@@ -1555,6 +1569,13 @@ class Model:
         df = DataFrame(columns=models[self.solute_transport["iNonEqual"]],
                        index=self.materials.index, data=0, dtype=float)
         return df
+    
+    def get_empty_co2_df(self):
+        '''
+        Get an empty DataFrame with the CO2 parameters as columns.
+        '''
+        columns = ["DispA", "DispW", "Dl"]
+        return DataFrame(columns=columns, index=self.materials.index,dtype=float)
 
     def _set_bc_settings(self):
         """
