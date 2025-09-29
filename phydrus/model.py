@@ -1266,31 +1266,6 @@ class Model:
             lines.append("tPulse\n{}\n".format(
                 self.solute_transport["tPulse"]))
 
-        # Write Block G - Root water uptake information
-        if self.basic_info["lSink"]:
-            lines.append(string.format("G: ROOT WATER UPTAKE INFORMATION ",
-                                       "*", "<", 72))
-            vars_list = [["iMoSink", "cRootMax", "OmegaC", "\n"]]
-
-            if self.root_uptake["iMoSink"] == 0:
-                vars_list.append(
-                    ["P0", "P2H", "P2L", "P3", "r2H", "r2L", "\n"])
-            elif self.root_uptake["iMoSink"] == 1:
-                vars_list.append(["P50", "P3", "\n"])
-
-            for variables in vars_list:
-                lines.append(" ".join(variables))
-                lines.append("    ".join(f"{self.root_uptake[var]}" for var in
-                                         variables[:-1]))
-                lines.append("\n")
-
-            lines.append("POptm(1),POptm(2),...,POptm(NMat)\n")
-            lines.append("    ".join(f"{p}" for p in self.root_uptake[
-                "POptm"]))
-            lines.append("\n")
-
-            if self.basic_info["lChem"]:
-                lines.append("Solute Reduction\nf\n")
 
         # Write Block J - Inverse solution information
         if self.basic_info["lInverse"]:
@@ -1338,6 +1313,30 @@ class Model:
 
             # lines.append(self.co2_parameters.to_string(index=False))
             
+        # Write Block G - Root water uptake information
+        if self.basic_info["lSink"]:
+            lines.append(string.format("G: ROOT WATER UPTAKE INFORMATION ",
+                                       "*", "<", 72))
+            vars_list = [["iMoSink", "cRootMax", "OmegaC", "\n"]]
+
+            if self.root_uptake["iMoSink"] == 0:
+                vars_list.append(
+                    ["P0", "P2H", "P2L", "P3", "r2H", "r2L", "\n"])
+            elif self.root_uptake["iMoSink"] == 1:
+                vars_list.append(["P50", "P3", "\n"])
+
+            for variables in vars_list:
+                lines.append(" ".join(variables))
+                lines.append("    ".join(f"{self.root_uptake[var]}" for var in
+                                         variables[:-1]))
+                lines.append("\n")
+            print(self.root_uptake)
+            lines.append("POptm(1),POptm(2),...,POptm(NMat)\n")
+            lines.append("    ".join(f"{p}" for p in self.root_uptake["POptm"]))
+            lines.append("\n")
+
+            if self.basic_info["lChem"]:
+                lines.append("Solute Reduction\nf\n")
             
             
         # Write Block M – Meteorological information
