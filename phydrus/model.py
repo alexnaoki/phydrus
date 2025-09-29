@@ -1099,6 +1099,8 @@ class Model:
 
         lines.append(f"NMat NLay CosAlfa \n{self.n_materials}"
                      f" {self.n_layers} {self.basic_info['CosAlfa']}\n")
+        
+        # print(lines)
 
         # Write block B: WATER FLOW INFORMATION
         lines.append(string.format("B: WATER FLOW INFORMATION ", "*", "<", 72))
