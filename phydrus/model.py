@@ -1084,12 +1084,19 @@ class Model:
             f"LUnit TUnit MUnit\n{self.basic_info['LUnit']}\n"
             f"{self.basic_info['TUnit']}\n{self.basic_info['MUnit']}\n"
         ]
+        if self.basic_info["lCO2"]:
+            vars_list = [["lWat", "lChem", "lTemp", "lSink", "lRoot", "lShort",
+                          "lWDep", "lScreen", "AtmInf", "lCO2", "lKRed",
+                          "\n"],
+                         ["lSnow", "lHP1", "lMeteo", "lVapor", "lActRSU", "lFlux",
+                          "lIrrig", "\n"]]
+        else:
 
-        vars_list = [["lWat", "lChem", "lTemp", "lSink", "lRoot", "lShort",
-                      "lWDep", "lScreen", "AtmInf", "lEquil", "lInverse",
-                      "\n"],
-                     ["lSnow", "lHP1", "lMeteo", "lVapor", "lActRSU", "lFlux",
-                      "lIrrig", "\n"]]
+            vars_list = [["lWat", "lChem", "lTemp", "lSink", "lRoot", "lShort",
+                        "lWDep", "lScreen", "AtmInf", "lEquil", "lInverse",
+                        "\n"],
+                        ["lSnow", "lHP1", "lMeteo", "lVapor", "lActRSU", "lFlux",
+                        "lIrrig", "\n"]]
 
         for variables in vars_list:
             lines.append("  ".join(variables))
@@ -1275,10 +1282,10 @@ class Model:
 
         # Write Block K – Carbon dioxide transport information
         if self.basic_info["lCO2"]:
-            lines.append(string.format("*** K: CARBON DIOXIDE TRANSPORT "
+            lines.append(string.format("G: CARBON DIOXIDE TRANSPORT "
                                        "INFORMATION ", "*", "<", 72))
-            lines.append("\n lStagn\n".format(self.co2_transport["lStagn"]))
-            vars_list = [["kTopCO", "CO2Top", "kBotCO", "CO2Bot", "\n"],
+            lines.append("lStagn\n{}\n".format("t" if self.co2_transport["lStagn"] else "f"))
+            vars_list = [["kTopCO2", "CO2Top", "kBotCO2", "CO2Bot", "\n"],
                             ["GamR0", "GamS0", "PDDMax", "kProd", "\n"],
                             ["B2", "B1", "cM2", "cM1", "HB1", "HB2", "P0c", "P50c","\n"]]
             for n, variables in enumerate(vars_list):
@@ -1288,6 +1295,7 @@ class Model:
                                              variables[:-1]))
                     lines.append("\n")
                     lines.append(self.co2_parameters.to_string(index=False))
+                    lines.append("\n")
                 if n == 1:
                     if self.co2_transport["kProd"] == 0:
                         use_alpha = True
