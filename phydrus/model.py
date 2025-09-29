@@ -989,7 +989,7 @@ class Model:
                 self.times = [self.time_info["tMax"]]
         return self.times
 
-    def add_co2_transport(self, parameters,lstagn=0, CO2Top, kBotCO,Co2Bot, GamR0, GamS0, PDDMax, kProd,Alpha, R,B2, B1,cM2, cM1, HB1, HB2, P0c, P50c):
+    def add_co2_transport(self, parameters,lstagn, CO2Top, kBotCO2,CO2Bot, GamR0, GamS0, PDDMax, kProd,Alpha, R,B2, B1,cM2, cM1, HB1, HB2, P0c, P50c):
         '''
         kBotCO: 1 = Dirichlet boundary condition,
                 -1 = Cauchy boundary condition.
@@ -999,10 +999,10 @@ class Model:
             self.co2_parameters = parameters
             self.co2_transport = {
                 "lStagn": lstagn,
-                "kTopCO": -1 if lstagn else 1,
+                "kTopCO2": -1 if lstagn else 1,
                 "CO2Top": CO2Top,
-                "kBotCO": kBotCO,
-                "CO2Bot": 0 if kBotCO == 0 else Co2Bot,
+                "kBotCO2": kBotCO2,
+                "CO2Bot": 0 if kBotCO2 == 0 else CO2Bot,
                 "GamR0": GamR0,
                 "GamS0": GamS0,
                 "PDDMax": PDDMax,
