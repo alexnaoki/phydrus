@@ -109,6 +109,7 @@ class Model:
             "lWDep": False,
             "lScreen": print_screen,
             "lCO2": False,
+            "lKRed": False,
             "AtmInf": False,
             "lEquil": True,
             "lInverse": False,
