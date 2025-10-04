@@ -241,7 +241,7 @@ class Model:
         """
         for obs in depths:
             nodes = self.profile.iloc[
-                (self.profile['x'] - obs).abs().argsort()[:1]]
+                (abs(self.profile['x']) - obs).abs().argsort()[:1]]
             node = nodes.index.values.astype(int)[0]
             self.obs_nodes.append(node)
 
