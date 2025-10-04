@@ -405,3 +405,15 @@ def read_balance(path="BALANCE.OUT", usecols=None):
         data[time] = df
 
     return data
+
+
+def read_co2_inf(path="CO2_INF.OUT", usecols=None):
+    """
+    Method to read the CO2_INF.OUT output file.
+
+    Parameters
+    ----------
+    """
+    data = _read_file(path=path, start="Time", idx_col="Time",
+                      remove_first_row=True, usecols=usecols)
+    return data
