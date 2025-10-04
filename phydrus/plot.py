@@ -130,9 +130,16 @@ class Plots:
             col_names = col_names + ("Concentration", "Sorbtion")
             units.extend([f"c [{m_unit}/{l_unit}*3]", "sorb."])
 
+        if self.ml.basic_info['lCO2']:
+            use_cols = use_cols + ("CO2", "CO2_prod")
+            col_names = col_names + ("CO2", "CO2 Production")
+            units.extend([f"CO2 [{m_unit}/{l_unit}*3]", f"CO2_prod [{m_unit}/{l_unit}*3/{t_unit}]"])
+
         col = col_names.index(data)
         _, ax = plt.subplots(figsize=figsize, **kwargs)
         dfs = self.ml.read_nod_inf(times=times)
+
+        print(dfs)
 
         if times is None or len(times) > 1:
             for key, df in dfs.items():
@@ -272,3 +279,29 @@ class Plots:
         ax.set_xlabel(f"Time [{self.ml.basic_info['TUnit']}]")
         ax.set_ylabel(data)
         return ax
+
+    def co2_info(self, data=None):
+        """
+        Method to read the CO2_INF.OUT file.
+
+        Parameters
+        ----------
+        usecols: list of str, optional
+            List of strings with the columns to read from the CO2_INF.OUT file.
+            If None, all columns are read.
+
+        Returns
+        -------
+        data: pandas DataFrame
+            DataFrame with the data from the CO2_INF.OUT file.
+
+        """
+        df = self.ml.read_co2_inf()
+        # df.resample('H').mean()
+        # print(df)
+        
+        fig, ax = plt.subplots(figsize=(6, 3))
+        df.rolling(window=2).mean().plot(y=f'{data}', ax=ax)
+        fig.tight_layout()
+        fig.show()
+        # return df
