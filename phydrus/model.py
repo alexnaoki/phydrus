@@ -12,7 +12,7 @@ from pandas import DataFrame, DatetimeIndex, MultiIndex
 
 from .plot import Plots
 from .read import read_profile, read_nod_inf, read_run_inf, read_tlevel, \
-    read_balance, read_i_check, read_obs_node, read_solute, read_alevel
+    read_balance, read_i_check, read_obs_node, read_solute, read_alevel, read_co2_inf
 from .version import __version__
 
 
@@ -1532,6 +1532,14 @@ class Model:
         path = os.path.join(self.ws_name, fname)
         data = read_solute(path=path)
         return data
+
+    def read_co2_inf(self, fname="CO2_INF.OUT", usecols=None):
+        path = os.path.join(self.ws_name, fname)
+        data = read_co2_inf(path=path, usecols=usecols)
+        # print(data)
+        return data
+
+
 
     def get_empty_material_df(self, n=1):
         """
