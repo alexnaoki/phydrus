@@ -92,7 +92,7 @@ class Plots:
         return ax
 
     def profile_information(self, data="Pressure Head", times=None,
-                            legend=True, figsize=(5, 3), **kwargs):
+                            legend=True, figsize=(5, 3), line_cmap="viridis", **kwargs):
         """
         Method to plot the soil profile information.
 
@@ -102,16 +102,14 @@ class Plots:
             String with the variable of the profile information to plot. 
             You can choose between: "Pressure Head", "Water Content", 
             "Hydraulic Conductivity","Hydraulic Capacity", "Water Flux", 
-            "Root Uptake", "Temperature". Default is "Pressure Head".
+            "Root Uptake", "Temperature".
         times: list of int
-            List of integers of the time step to plot.       
-        figsize: tuple, optional
+            List of integers of the time step to plot. If None (default) all available
+            times found in the file are plotted.
         legend: boolean, optional
-
-        Returns
-        -------
-        ax: matplotlib axes instance
-
+        figsize: tuple, optional
+        line_cmap: str, optional
+            Matplotlib colormap name to assign sequential colors to each time line.
         """
         l_unit = self.ml.basic_info["LUnit"]
         t_unit = self.ml.basic_info["TUnit"]
@@ -139,13 +137,18 @@ class Plots:
         _, ax = plt.subplots(figsize=figsize, **kwargs)
         dfs = self.ml.read_nod_inf(times=times)
 
-        print(dfs)
-
-        if times is None or len(times) > 1:
-            for key, df in dfs.items():
-                df.plot(x=use_cols[col], y="Depth", ax=ax, label=f"time={key}")
+        # Multiple times (dict of DataFrames) -> sequential colors
+        if times is None or (isinstance(times, (list, tuple)) and len(times) > 1):
+            # Ensure consistent order by sorting keys
+            items = sorted(dfs.items()) if isinstance(dfs, dict) else []
+            cmap = plt.get_cmap(line_cmap, len(items) if items else 1)
+            for idx, (key, df) in enumerate(items):
+                color = cmap(idx)
+                df.plot(x=use_cols[col], y="Depth", ax=ax, label=f"time={key}", color=color)
         else:
-            dfs.plot(x=use_cols[col], y="Depth", ax=ax, label=f"T {times}")
+            # Single time -> dfs is a DataFrame
+            single_color = plt.get_cmap(line_cmap, 1)(0)
+            dfs.plot(x=use_cols[col], y="Depth", ax=ax, label=f"time={times[0] if times else ''}", color=single_color)
 
         ax.set_xlabel(units[col])
         ax.set_ylabel(f"Depth [{self.ml.basic_info['LUnit']}]")
