@@ -14,7 +14,7 @@ or
 
 """
 
-from pandas import read_csv, DataFrame, to_numeric
+from pandas import read_csv, DataFrame, to_numeric, concat
 
 from .decorators import check_file_path
 
