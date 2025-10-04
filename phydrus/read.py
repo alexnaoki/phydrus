@@ -317,12 +317,31 @@ def read_nod_inf(path="NOD_INF.OUT", times=None):
         for s, e, time in zip(start, end, use_times):
             if time in times:
                 file.seek(0)  # Go back to start of file
-                data[time] = read_csv(file, skiprows=s,
+                df = read_csv(file, skiprows=s,
                                       skipinitialspace=True,
                                       delim_whitespace=True,
+                                      usecols=[i for i in range(0,9,1)],
                                       nrows=e - s - 2)
-                data[time] = data[time].drop([0])
-                data[time] = data[time].apply(to_numeric)
+                df = df.drop([0])
+                df = df.apply(to_numeric)
+                # data[time] = pd.read_csv(file, skiprows=s,
+                #                       skipinitialspace=True,
+                #                       delim_whitespace=True,
+                #                       usecols=[i for i in range(0,9,1)],
+                #                       nrows=e - s - 2)
+                # data[time] = data[time].drop([0])
+                # data[time] = data[time].apply(pd.to_numeric)
+                file.seek(0)  # Go back to start of file
+                df_co2 = read_csv(file, skiprows=s,
+                                      skipinitialspace=True,
+                                      delim_whitespace=True,
+                                      usecols=[i for i in range(10,14,1)],
+                                      nrows=e - s - 2)
+                df_co2.rename({'CO2': 'Temp', 'CO2.1': 'CO2', 'Prod': 'CO2_prod'}, axis=1, inplace=True)
+                df_co2 = df_co2.drop([0])
+                df_co2 = df_co2.apply(to_numeric)
+                df = concat([df, df_co2], axis=1)
+                data[time] = df
     if len(data) == 1:
         return next(iter(data.values()))
     else:
