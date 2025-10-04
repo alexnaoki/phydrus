@@ -1188,10 +1188,25 @@ class Model:
             lines.append(" ".join(values))
 
         lines.append("TPrint(1),TPrint(2),...,TPrint(MPL)\n")
-        for i in range(int(len(self.times) / 6) + 1):
+        for i in range(int(len(self.times) / 6)+1):
+            print(i,'/', int(len(self.times) / 6) + 1)
+            j =[str(time) for time in self.times[i * 6:i * 6 + 6]]
             lines.append(
-                " ".join([str(time) for time in self.times[i * 6:i * 6 + 6]]))
-            lines.append("\n")
+                " ".join(j))
+            print(lines[-1])
+            print('\t',len(j))
+            # elif (len(j) < 6) and (i == int(len(self.times) / 6)):
+            #     lines.append("\n")
+            if (len(j) == 6) and (i+1 < int(len(self.times) / 6)+1):
+                lines.append("\n")
+                print('a1')
+            elif (len(j) < 6) and (len(j)>0) and(i+1 == int(len(self.times) / 6)+1):
+                lines.append("\n")
+                print('a2')
+            elif (len(j)==6) and (i+1 == int(len(self.times) / 6)+1):
+                lines.append("fdasfsa")
+                print('a3')
+
 
         # Write BLOCK D: Root Growth Information
         if self.basic_info["lRoot"]:
