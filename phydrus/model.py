@@ -105,7 +105,7 @@ class Model:
             "lTemp": False,
             "lSink": False,
             "lRoot": False,
-            "lShort": True,
+            "lShort": False,
             "lWDep": False,
             "lScreen": print_screen,
             "lCO2": False,
@@ -1034,7 +1034,7 @@ class Model:
 
         # Run Hydrus executable.
         if self.exe_name.startswith("wine"):
-            print('Simulate with Wine')
+            print('Simulate with Wine with workspace:', self.ws_name)
             self.exe_name = self.exe_name.replace("wine ", "")
             cmd = ["wine", self.exe_name, self.ws_name, "-1"]
         else:
@@ -1052,6 +1052,7 @@ class Model:
 
     def write_input(self):
         """Method to write the input files for the HYDRUS-1D simulation."""
+        print('Temporary disabled Profile.dat and atmosph.in')
         # 1. Write SELECTOR.IN
         self.write_selector()
 
