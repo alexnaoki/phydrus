@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-
+import pandas as pd
 
 class Plots:
     """
@@ -17,8 +17,14 @@ class Plots:
 
     """
 
+    time_units = {
+        'seconds': 'S',
+        'minutes': 'T',
+        'hours': 'H',
+        'days': 'D'}
     def __init__(self, ml):
         self.ml = ml
+
 
     def profile(self, figsize=(3, 6), title=None, cmap="YlOrBr",
                 color_by="Ks", show_grid=True, **kwargs):
@@ -283,7 +289,7 @@ class Plots:
         ax.set_ylabel(data)
         return ax
 
-    def co2_info(self, data=None):
+    def co2_info(self, data=None, ax=None):
         """
         Method to read the CO2_INF.OUT file.
 
@@ -300,11 +306,17 @@ class Plots:
 
         """
         df = self.ml.read_co2_inf()
+
+        # print(self.ml.basic_info['TUnit'], self.time_units[self.ml.basic_info['TUnit']])
+
+        df.index = pd.to_timedelta(df.index.astype(float), 
+                                   unit=self.time_units[self.ml.basic_info['TUnit']])
         # df.resample('H').mean()
         # print(df)
         
-        fig, ax = plt.subplots(figsize=(6, 3))
-        df.rolling(window=2).mean().plot(y=f'{data}', ax=ax)
-        fig.tight_layout()
-        fig.show()
+        # fig, ax = plt.subplots(figsize=(6, 3))
+        # df.rolling(window=2).mean().plot(y=f'{data}', ax=ax)
+        df.resample(self.time_units[self.ml.basic_info['TUnit']]).mean().plot(y=f'{data}', ax=ax)
+        # fig.tight_layout()
+        # fig.show()
         # return df

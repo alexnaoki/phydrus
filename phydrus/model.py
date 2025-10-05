@@ -69,6 +69,7 @@ class Model:
         self.ws_name = ws_name
 
         self.hydrus1d_version = hydrus1d_version
+        self.time_units = time_unit
 
         self.name = name
         self.description = description
