@@ -371,8 +371,9 @@ def read_balance(path="BALANCE.OUT", usecols=None):
 
     """
     if usecols is None:
-        usecols = ["Area", "W-volume", "In-flow", "h Mean", "Top Flux",
+        usecols = ["Length", "W-volume", "In-flow", "h Mean", "Top Flux",
                    "Bot Flux", "WatBalT", "WatBalR"]
+    print('read_balance')
 
     lines = open(path).readlines()
     use_times = []
@@ -385,27 +386,32 @@ def read_balance(path="BALANCE.OUT", usecols=None):
                 line2 = line.replace("\n", "").split(" ")[-1]
                 line3 = line.replace("  ", " ").split(" ")[-2]
                 lines[i] = [line1, line2, line3]
+                # print(lines[i])
 
         if "Time" in line and "Date" not in line:
             time = float(
                 line.replace(" ", "").split("]")[1].replace("\n", ""))
             use_times.append(time)
-        if "Area" in line:
+        if "Length" in line:
             start.append(i)
         if "WatBalR" in line:
             end.append(i + 1)
         if "Sub-region" in line:
             subreg = line.replace("  ", " ").replace("\n", "").split(" ")[-1]
 
+    print(start, end, use_times)
     data = {}
     for s, e, time in zip(start, end, use_times):
         df = DataFrame(lines[s:e]).set_index(0).T
+        print(s, e, time)
+        print(lines[s:e])
         index = {}
         for x in range(int(subreg) + 1):
             index[x + 1] = x
             df = df.rename(index=index)
         data[time] = df
-
+    # for t in use_times:
+    #     print(data[t])
     return data
 
 
