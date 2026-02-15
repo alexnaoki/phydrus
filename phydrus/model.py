@@ -1509,14 +1509,14 @@ class Model:
         return data
 
     def read_obs_node(self, fname="OBS_NODE.OUT", nodes=None, conc=False,
-                      cols=None):
+                      cols=None, co2=False):
         path = os.path.join(self.ws_name, fname)
         if self.basic_info["lChem"]:
             conc = True
         if nodes is None:
             nodes = self.obs_nodes
 
-        data = read_obs_node(path=path, nodes=nodes, conc=conc, cols=cols)
+        data = read_obs_node(path=path, nodes=nodes, conc=conc, cols=cols, co2=co2)
         return data
 
     def read_i_check(self, fname="I_CHECK.OUT"):

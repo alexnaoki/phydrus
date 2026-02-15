@@ -225,7 +225,7 @@ def _read_file(path, start, end="end", usecols=None, idx_col=None,
 
 
 @check_file_path
-def read_obs_node(path="OBS_NODE.OUT", nodes=None, conc=False, cols=None):
+def read_obs_node(path="OBS_NODE.OUT", nodes=None, conc=False, co2=False,cols=None):
     """
     Method to read the OBS_NODE.OUT output file.
 
@@ -262,6 +262,8 @@ def read_obs_node(path="OBS_NODE.OUT", nodes=None, conc=False, cols=None):
         cols = ["h", "theta", "Temp"]
     if conc:
         cols.append("Conc")
+    if co2:
+        cols.append("CO2")
 
     for i, node in enumerate(nodes):
         if i > 0:
