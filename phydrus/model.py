@@ -228,7 +228,7 @@ class Model:
         """
         return NotImplementedError
 
-    def add_obs_nodes(self, depths):
+    def add_obs_nodes(self, depths, node_n=False):
         """
         Method to add observation points.
 
@@ -240,11 +240,16 @@ class Model:
             The function defines the closest node to the desired depth.
 
         """
-        for obs in depths:
-            nodes = self.profile.iloc[
-                (abs(self.profile['x']) - obs).abs().argsort()[:1]]
-            node = nodes.index.values.astype(int)[0]
-            self.obs_nodes.append(node)
+        if not node_n:
+            for obs in depths:
+                nodes = self.profile.iloc[
+                    (abs(self.profile['x']) - obs).abs().argsort()[:1]]
+                node = nodes.index.values.astype(int)[0]
+                self.obs_nodes.append(node)
+        else:
+            # depths == node numbers
+            self.obs_nodes = depths
+
 
     def add_waterflow(self, model=0, maxit=10, tolth=1e-3, tolh=1, ha=1e-6,
                       hb=1e4, linitw=False, top_bc=0, bot_bc=0, hseep=0,
