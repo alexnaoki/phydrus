@@ -1199,19 +1199,19 @@ class Model:
             j =[str(time) for time in self.times[i * 6:i * 6 + 6]]
             lines.append(
                 " ".join(j))
-            print(lines[-1])
-            print('\t',len(j))
+            # print(lines[-1])
+            # print('\t',len(j))
             # elif (len(j) < 6) and (i == int(len(self.times) / 6)):
             #     lines.append("\n")
             if (len(j) == 6) and (i+1 < int(len(self.times) / 6)+1):
                 lines.append("\n")
-                print('a1')
+                # print('a1')
             elif (len(j) < 6) and (len(j)>0) and(i+1 == int(len(self.times) / 6)+1):
                 lines.append("\n")
-                print('a2')
+                # print('a2')
             elif (len(j)==6) and (i+1 == int(len(self.times) / 6)+1):
                 lines.append("fdasfsa")
-                print('a3')
+                # print('a3')
 
 
         # Write BLOCK D: Root Growth Information
