@@ -373,7 +373,7 @@ def read_balance(path="BALANCE.OUT", usecols=None):
     if usecols is None:
         usecols = ["Length", "W-volume", "In-flow", "h Mean", "Top Flux",
                    "Bot Flux", "WatBalT", "WatBalR"]
-    print('read_balance')
+    # print('read_balance')
 
     lines = open(path).readlines()
     use_times = []
@@ -399,12 +399,12 @@ def read_balance(path="BALANCE.OUT", usecols=None):
         if "Sub-region" in line:
             subreg = line.replace("  ", " ").replace("\n", "").split(" ")[-1]
 
-    print(start, end, use_times)
+    # print(start, end, use_times)
     data = {}
     for s, e, time in zip(start, end, use_times):
         df = DataFrame(lines[s:e]).set_index(0).T
-        print(s, e, time)
-        print(lines[s:e])
+        # print(s, e, time)
+        # print(lines[s:e])
         index = {}
         for x in range(int(subreg) + 1):
             index[x + 1] = x

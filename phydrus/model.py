@@ -1058,7 +1058,7 @@ class Model:
 
     def write_input(self):
         """Method to write the input files for the HYDRUS-1D simulation."""
-        print('Temporary disabled Profile.dat and atmosph.in')
+        # print('Temporary disabled Profile.dat and atmosph.in')
         # 1. Write SELECTOR.IN
         self.write_selector()
 
@@ -1195,7 +1195,7 @@ class Model:
 
         lines.append("TPrint(1),TPrint(2),...,TPrint(MPL)\n")
         for i in range(int(len(self.times) / 6)+1):
-            print(i,'/', int(len(self.times) / 6) + 1)
+            # print(i,'/', int(len(self.times) / 6) + 1)
             j =[str(time) for time in self.times[i * 6:i * 6 + 6]]
             lines.append(
                 " ".join(j))
@@ -1361,7 +1361,7 @@ class Model:
                 lines.append("    ".join(f"{self.root_uptake[var]}" for var in
                                          variables[:-1]))
                 lines.append("\n")
-            print(self.root_uptake)
+            # print(self.root_uptake)
             lines.append("POptm(1),POptm(2),...,POptm(NMat)\n")
             lines.append("    ".join(f"{p}" for p in self.root_uptake["POptm"]))
             lines.append("\n")
