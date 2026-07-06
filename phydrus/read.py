@@ -213,7 +213,8 @@ def _read_file(path, start, end="end", usecols=None, idx_col=None,
         # Read data into a Pandas DataFrame
         data = read_csv(file, skiprows=s, nrows=e - s - 2, usecols=usecols,
                         index_col=idx_col, skipinitialspace=True,
-                        delim_whitespace=True)
+                        # delim_whitespace=True
+                        sep='\s+')
 
         if remove_first_row:
             data = data.drop(index=data.index[0]).apply(to_numeric,
@@ -321,7 +322,8 @@ def read_nod_inf(path="NOD_INF.OUT", times=None):
                 file.seek(0)  # Go back to start of file
                 df = read_csv(file, skiprows=s,
                                       skipinitialspace=True,
-                                      delim_whitespace=True,
+                                    #   delim_whitespace=True,
+                                    sep='\s+',
                                       usecols=[i for i in range(0,9,1)],
                                       nrows=e - s - 2)
                 df = df.drop([0])
@@ -336,7 +338,8 @@ def read_nod_inf(path="NOD_INF.OUT", times=None):
                 file.seek(0)  # Go back to start of file
                 df_co2 = read_csv(file, skiprows=s,
                                       skipinitialspace=True,
-                                      delim_whitespace=True,
+                                    #   delim_whitespace=True,
+                                    sep='\s+',
                                       usecols=[i for i in range(10,14,1)],
                                       nrows=e - s - 2)
                 df_co2.rename({'CO2': 'Temp', 'CO2.1': 'CO2', 'Prod': 'CO2_prod'}, axis=1, inplace=True)
